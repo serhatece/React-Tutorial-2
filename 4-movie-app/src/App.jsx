@@ -15,6 +15,13 @@ const movie_list = [
     Poster:
       "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg",
   },
+  {
+    Id: "771",
+    Title: "The Shawshank Redemption",
+    Year: "1994",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg",
+  },
 ];
 
 const selected_movie_list = [
