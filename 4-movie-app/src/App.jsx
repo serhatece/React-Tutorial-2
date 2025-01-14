@@ -1,56 +1,28 @@
-import { useState } from "react";
-
-const movie_list = [
-  {
-    Id: "769",
-    Title: "The Shawshank Redemption",
-    Year: "1994",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg",
-  },
-  {
-    Id: "770",
-    Title: "The Shawshank Redemption",
-    Year: "1994",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg",
-  },
-  {
-    Id: "771",
-    Title: "The Shawshank Redemption",
-    Year: "1994",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg",
-  },
-];
-
-const selected_movie_list = [
-  {
-    Id: "769",
-    Title: "The Shawshank Redemption",
-    Year: "1994",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg",
-    Duration: 120,
-    Rating: 5.5,
-  },
-  {
-    Id: "770",
-    Title: "The Shawshank Redemption",
-    Year: "1994",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg",
-    Duration: 125,
-    Rating: 8.8,
-  },
-];
+import { useEffect, useState } from "react";
 
 const getAverage = (array) =>
   array.reduce((sum, value) => sum + value, 0) / array.length;
 
+const api_key = "3bd6e1ef69e94753d5f438c7a13a2dc4";
+const query = "last";
+
 export default function App() {
-  const [movies, setMovies] = useState(movie_list);
-  const [selectedMovies, setSelectedMovies] = useState(selected_movie_list);
+  const [movies, setMovies] = useState([]);
+  const [selectedMovies, setSelectedMovies] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(function () {
+    async function getMovies() {
+      setLoading(true);
+      const res = await fetch(
+        `https://api.themoviedb.org/3/search/movie?api_key=${api_key}&query=${query}`
+      );
+      const data = await res.json();
+      setMovies(data.results);
+      setLoading(false);
+    }
+    getMovies();
+  }, []);
 
   return (
     <>
@@ -63,7 +35,7 @@ export default function App() {
         <div className="row mt-2">
           <div className="col-md-9">
             <ListContainer>
-              <MovieList movies={movies} />
+              {loading ? <Loading /> : <MovieList movies={movies} />}
             </ListContainer>
           </div>
           <div className="col-md-3">
@@ -85,6 +57,14 @@ export default function App() {
         </div>
       </Main>
     </>
+  );
+}
+
+function Loading() {
+  return (
+    <div className="spinner-border text-primary" role="status">
+      <span className="visually-hidden">Loading...</span>
+    </div>
   );
 }
 
@@ -150,7 +130,7 @@ function MovieList({ movies }) {
   return (
     <div className="row row-cols-md-3 row-cols-xl-4 g-4">
       {movies.map((movie) => (
-        <Movie movie={movie} key={movie.Id} />
+        <Movie key={movie.id} movie={movie} />
       ))}
     </div>
   );
@@ -160,11 +140,20 @@ function Movie({ movie }) {
   return (
     <div className="col mb-2">
       <div className="card">
-        <img src={movie.Poster} className="card-img-top" alt={movie.Title} />
+        <img
+          src={
+            movie.poster_path
+              ? `https://media.themoviedb.org/t/p/w440_and_h660_face` +
+                movie.poster_path
+              : "/img/no-image.jpg"
+          }
+          className="card-img-top"
+          alt={movie.title}
+        />
         <div className="card-body">
-          <h6 className="card-title">{movie.Title}</h6>
+          <h6 className="card-title">{movie.title}</h6>
           <i className="bi  bi-calendar-date me-1"></i>
-          <span>{movie.Year}</span>
+          <span>{movie.release_date}</span>
         </div>
       </div>
     </div>
