@@ -1,62 +1,112 @@
 import { useEffect, useState } from "react";
 
 const getAverage = (array) =>
-  array.reduce((sum, value) => sum + value, 0) / array.length;
+  array.reduce((sum, value) => sum + value / array.length, 0);
 
 const api_key = "3bd6e1ef69e94753d5f438c7a13a2dc4";
-const query = "last";
 
 export default function App() {
+  const [query, setQuery] = useState("last");
   const [movies, setMovies] = useState([]);
   const [selectedMovies, setSelectedMovies] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [selectedMovie, setSelectedMovie] = useState(null);
 
-  useEffect(function () {
-    async function getMovies() {
-      setLoading(true);
-      const res = await fetch(
-        `https://api.themoviedb.org/3/search/movie?api_key=${api_key}&query=${query}`
-      );
-      const data = await res.json();
-      setMovies(data.results);
-      setLoading(false);
-    }
-    getMovies();
-  }, []);
+  function handleSelectedMovie(id) {
+    setSelectedMovie((selectedMovie) => (id === selectedMovie ? null : id));
+  }
+
+  function handleUnSelectMovie() {
+    setSelectedMovie(null);
+  }
+
+  useEffect(
+    function () {
+      async function getMovies() {
+        try {
+          setLoading(true);
+          setError("");
+          const res = await fetch(
+            `https://api.themoviedb.org/3/search/movie?api_key=${api_key}&query=${query}`
+          );
+          if (!res.ok) {
+            throw new Error("Bir hata olustu");
+          }
+          const data = await res.json();
+          if (data.total_results === 0) {
+            throw new Error("Aradiginiz film bulunamadi");
+          }
+          setMovies(data.results);
+        } catch (err) {
+          setError(err.message);
+        }
+        setLoading(false);
+      }
+      if (query.length < 4) {
+        setMovies([]);
+        setError("");
+        return;
+      }
+      getMovies();
+    },
+    [query]
+  );
 
   return (
     <>
       <Nav>
         <Logo />
-        <Search />
+        <Search query={query} setQuery={setQuery} />
         <NavSearchResults movies={movies} />
       </Nav>
       <Main>
         <div className="row mt-2">
           <div className="col-md-9">
             <ListContainer>
-              {loading ? <Loading /> : <MovieList movies={movies} />}
+              {/* {loading ? <Loading /> : <MovieList movies={movies} />} */}
+              {loading && <Loading />}
+              {!loading && !error && (
+                <MovieList
+                  movies={movies}
+                  onSelectMovie={handleSelectedMovie}
+                  selectedMovie={selectedMovie}
+                />
+              )}
+              {error && <ErrorMessage message={error} />}
             </ListContainer>
           </div>
           <div className="col-md-3">
             <ListContainer>
-              <>
-                <MyListSummary
-                  selectedMovies={selectedMovies}
-                  AvgRating={getAverage(
-                    selectedMovies.map((movie) => movie.Rating)
-                  )}
-                  AvgDuration={getAverage(
-                    selectedMovies.map((movie) => movie.Duration)
-                  )}
+              <MyListSummary
+                selectedMovies={selectedMovies}
+                AvgRating={getAverage(
+                  selectedMovies.map((movie) => movie.Rating)
+                )}
+                AvgDuration={getAverage(
+                  selectedMovies.map((movie) => movie.Duration)
+                )}
+              />
+              <MyMovieList selectedMovies={selectedMovies} />
+              {selectedMovie && (
+                <MovieDetails
+                  selectedMovie={selectedMovie}
+                  onUnSelectMovie={handleUnSelectMovie}
                 />
-                <MyMovieList selectedMovies={selectedMovies} />
-              </>
+              )}
             </ListContainer>
           </div>
         </div>
       </Main>
     </>
+  );
+}
+
+function ErrorMessage({ message }) {
+  return (
+    <div className="alert alert-danger" role="alert">
+      {message}
+    </div>
   );
 }
 
@@ -86,10 +136,16 @@ function Logo() {
   );
 }
 
-function Search() {
+function Search({ query, setQuery }) {
   return (
     <div className="col-4">
-      <input type="text" className="form-control" placeholder="Film Ara" />
+      <input
+        type="text"
+        className="form-control"
+        placeholder="Film Ara"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
     </div>
   );
 }
@@ -126,20 +182,100 @@ function ListContainer({ children }) {
   );
 }
 
-function MovieList({ movies }) {
+function MovieList({ movies, onSelectMovie, selectedMovie }) {
   return (
     <div className="row row-cols-md-3 row-cols-xl-4 g-4">
       {movies.map((movie) => (
-        <Movie key={movie.id} movie={movie} />
+        <Movie
+          key={movie.id}
+          movie={movie}
+          onSelectMovie={onSelectMovie}
+          selectedMovie={selectedMovie}
+        />
       ))}
     </div>
   );
 }
 
-function Movie({ movie }) {
+function MovieDetails({ selectedMovie, onUnSelectMovie }) {
+  const [movie, setMovie] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  useEffect(
+    function () {
+      async function getMovieDetails() {
+        setLoading(true);
+        const res = await fetch(
+          `https://api.themoviedb.org/3/movie/${selectedMovie}?api_key=${api_key}`
+        );
+        const data = await res.json();
+        setMovie(data);
+        setLoading(false);
+      }
+      getMovieDetails();
+    },
+    [selectedMovie]
+  );
+
+  return (
+    <>
+      {loading ? (
+        <Loading />
+      ) : (
+        <div className="border p-2 mb-3">
+          <div className="row">
+            <div className="col-4">
+              <img
+                src={
+                  movie.poster_path
+                    ? `https://media.themoviedb.org/t/p/w440_and_h660_face` +
+                      movie.poster_path
+                    : "/img/no-image.jpg"
+                }
+                className="img-fluid rounded"
+                alt={movie.title}
+              />
+            </div>
+            <div className="col-8">
+              <h6>{movie.title}</h6>
+              <p>
+                <i className="bi  bi-calendar-date me-1"></i>
+                <span>{movie.release_date}</span>
+              </p>
+              <p>
+                <i className="bi bi-star-fill text-warning"></i>
+                <span>{movie.vote_average}</span>
+              </p>
+            </div>
+            <div className="col-12 border-top p-3 mt-3">
+              <p>{movie.overview}</p>
+              <p>
+                {movie.genres?.map((genre) => (
+                  <span key={genre.id} className="badge text-bg-primary me-1">
+                    {genre.name}
+                  </span>
+                ))}
+              </p>
+              <button className="btn btn-danger" onClick={onUnSelectMovie}>
+                Kapat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+function Movie({ movie, onSelectMovie, selectedMovie }) {
   return (
     <div className="col mb-2">
-      <div className="card">
+      <div
+        className={`card movie ${
+          selectedMovie === movie.id ? "selected-movie" : ""
+        }`}
+        onClick={() => onSelectMovie(movie.id)}
+      >
         <img
           src={
             movie.poster_path
