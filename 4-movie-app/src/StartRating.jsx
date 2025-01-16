@@ -1,5 +1,5 @@
 import { useState } from "react";
-import PropTypes from "prop-types";
+import PropTypes, { func } from "prop-types";
 
 const containerStyle = {
   display: "flex",
@@ -12,8 +12,8 @@ const itemContainerStyle = {
   gap: ".2rem",
 };
 const textStyle = {
-  margin: "0 1rem",
-  fontSize: "2.5rem",
+  margin: "0 .5rem",
+  fontSize: "1.2rem",
 };
 
 StartRating.propTypes = {
@@ -26,9 +26,15 @@ export default function StartRating({
   maxRating = 5,
   color = "#fcc419",
   size = 58,
+  onRating,
 }) {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
+
+  function handleSetRating(rating) {
+    setRating(rating);
+    onRating(rating);
+  }
 
   return (
     <div style={containerStyle}>
@@ -37,7 +43,7 @@ export default function StartRating({
           <Star
             key={i}
             fill={hoverRating ? hoverRating >= i + 1 : rating >= i + 1}
-            onRating={() => setRating(i + 1)}
+            onRating={() => handleSetRating(i + 1)}
             color={color}
             size={size}
             onHoverEnter={() => setHoverRating(i + 1)}
