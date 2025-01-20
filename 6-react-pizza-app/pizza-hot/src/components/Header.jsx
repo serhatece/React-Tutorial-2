@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { ThemeContext } from "../context/ThemeContext";
 
 export default function Header() {
-  const { color, setColor } = useContext(ThemeContext);
+  const { color } = useContext(ThemeContext);
   return (
     <header>
       <nav
