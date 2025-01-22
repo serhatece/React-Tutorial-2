@@ -10,22 +10,21 @@ export function CartContextProvider({ children }) {
   function addItem(item) {
     dispatch({ type: "ADD_ITEM", item });
   }
-
-  // update cart items
-  function updateItem() {}
-
   // delete cart item
-  function deleteItem() {}
+  function deleteItem(id) {
+    dispatch({ type: "REMOVE_ITEM", id });
+  }
 
-  //  clear all items
-  function clearAll() {}
+  function clearAll() {
+    dispatch({ type: "CLEAR_CART" });
+  }
 
   const cartContext = {
     items: cart.items,
     addItem,
+    deleteItem,
+    clearAll,
   };
-
-  console.log(cartContext);
 
   return (
     <CartContext.Provider value={cartContext}>{children}</CartContext.Provider>
