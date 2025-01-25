@@ -5,8 +5,8 @@ import TypeGraphyUsage from "./components/TypeGraphyUsage";
 function App() {
   return (
     <>
-      {/* <ButtonUsage /> */}
-      {/* <TypeGraphyUsage /> */}
+      <ButtonUsage />
+      <TypeGraphyUsage />
       <TextFieldUsage />
     </>
   );
