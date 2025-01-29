@@ -9,13 +9,13 @@ import CardUsage from "./components/CardUsage";
 function App() {
   return (
     <>
-      {<ButtonUsage />}
-      {<TypeGraphyUsage />}
-      {<TextFieldUsage />}
-      {<SelectUsage />}
-      {<RadioButton />}
-      {<CheckBoxUsage />}
-      <CardUsage />
+      {/* <ButtonUsage />
+      <TypeGraphyUsage />
+      <TextFieldUsage />
+      <SelectUsage />
+      <RadioButton />
+      <CheckBoxUsage />
+      <CardUsage /> */}
     </>
   );
 }
